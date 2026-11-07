@@ -27,6 +27,14 @@ Performed on 4 November 2026 in `/home/asaharan/PycharmProjects/medusa-megamenu`
 - No renderer, CSS, price calculation, inventory logic, inferred descendant-category membership, catalog seeding, catalog cleanup or automated product selection.
 - The optional Alphabite collection-images package was inspected read-only from its published 0.3.7 npm tarball because its linked GitHub repository was unavailable. Declared version ranges admit this environment, but runtime interop was not tested. No dependency was added or activated. README records its actual model/API and the distinction between collection thumbnails and menu promotional tiles.
 
+## Current release workflow migration
+
+The generic local check-package.mjs implementation and test:package alias were
+removed during the shared release migration. CI now calls the central packager
+against a real archive; config.release.requiredFiles preserves the additional
+native migration, snapshot and API requirements. The source/integration checks
+below remain current; the earlier results above are a historical record.
+
 ## Reproduction
 
 ```sh
@@ -34,7 +42,7 @@ npm ci
 npm run typecheck
 npm test
 npm run test:integration
-npm run test:package
+npm pack --ignore-scripts --dry-run
 ```
 
 The integration command builds and packs the plugin, starts only its own disposable PostgreSQL container and HTTP process, verifies the installed package, and cleans them up. It requires Docker and may pull `postgres:16-alpine`. It never reads a merchant database URL. CI runs the same source/build/integration checks on Ubuntu with Node 24.

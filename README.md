@@ -1,130 +1,181 @@
 # Medusa Mega Menu
 
-Reusable, headless navigation for Medusa Commerce v2. Native products, categories, collections, files and sales channels remain authoritative. No products, categories, collections or routes are created by this plugin. No Uniek styling is bundled.
+[![CI](https://github.com/abhi1693/medusa-megamenu/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/abhi1693/medusa-megamenu/actions/workflows/ci.yml)
+[![Medusa 2.22.1](https://img.shields.io/badge/Medusa-2.22.1-7c3aed)](https://docs.medusajs.com/)
+[![Node.js >=22.22.0](https://img.shields.io/badge/Node.js-%E2%89%A522.22.0-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MIT license](https://img.shields.io/github/license/abhi1693/medusa-megamenu)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/Sponsor-abhi1693-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/abhi1693)
 
-## Compatibility and installation
+Headless navigation for Medusa v2, with native Admin editing for menus, category and collection sections, ordered featured products and optional image tiles. Resolve published menus through a Store API that respects the native catalog and the requesting storefront's sales channels.
 
-Validated against **Medusa 2.22.1**, Admin SDK/icons 2.22.1, UI 4.2.8, React 18, Node 24 (minimum Node 22.22). The inspected Uniek manifests declare 2.22.2, but their installed framework, commerce modules and Admin SDK are actually 2.22.1. The registry did not resolve Admin SDK 2.22.2 during implementation. Do not treat declared dependencies as proof of runtime compatibility; align the host's actual installed versions before integration. Later Medusa versions require validation.
+**Your native catalog remains authoritative.** The plugin stores menu configuration and references existing products, categories and collections. Your storefront owns its routes, rendering and interaction; the plugin does not create catalog records or bundle a menu renderer.
 
-This package is not published to npm. Build and pack it locally after review:
+Validated with Medusa **2.22.1**, UI **4.2.8**, React **18.3.1** and Node.js **24**. The package requires Node.js **22.22.0 or newer** and currently declares exact **2.22.1** peers for the Medusa framework, commerce package, Admin SDK and icons. Align the host's installed versions with those peers; support for later versions is not implied.
+
+[Install](#install) · [Capabilities](#capabilities) · [Admin management](#admin-management) · [Storefront integration](#storefront-integration) · [RBAC integration](#rbac-integration) · [Server guarantees](#catalog-and-access-boundaries)
+
+## Capabilities
+
+| Capability | What it provides |
+| --- | --- |
+| Menu management | Named menus with unique handles, explicit publication, ordered sections and deletion. |
+| Native catalog groups | Category or collection targets, a full-group View all reference and an optional Shop all reference. |
+| Featured products | Explicit selection, ordering and a display limit from 0–50, checked against current native membership. |
+| Image tiles | One optional tile per section using an existing safe image URL, alt text and optional link. |
+| Store API | Published menu data with product publication and native sales-channel filtering on every request. |
+| Access control | Native staff authentication and optional persisted RBAC permission checks. |
+| Storefront adapters | Public TypeScript contracts without assumptions about routing, CSS, layout or pricing. |
+
+## Install
+
+The package has not yet been published to npm. Install a reviewed source revision:
 
 ```sh
-npm ci
-npm run typecheck
-npm test
-npm run build
-npm pack --ignore-scripts
-# In a separately authorized Medusa host:
-npm install /path/to/abhi1693-medusa-megamenu-0.0.1.tgz
+npm install 'git+https://github.com/abhi1693/medusa-megamenu.git#<commit>'
 ```
 
-Register the plugin in `medusa-config.ts`:
+The Git dependency runs `prepare` to build the server and Admin extension and include the native migration snapshot. Review and allow the source dependency's build scripts according to your package manager's install-script policy. A reviewed built archive can also be installed with `npm install /path/to/abhi1693-medusa-megamenu-0.0.1.tgz`.
+
+Add the plugin to the application's existing `plugins` array in `medusa-config.ts`:
 
 ```ts
-plugins: [{ resolve: "@abhi1693/medusa-megamenu", options: {} }]
+plugins: [
+  {
+    resolve: "@abhi1693/medusa-megamenu",
+    options: {},
+  },
+]
 ```
 
-Medusa discovers the packaged `megamenu` module, API routes, migrations and Admin extension. Run the host's `medusa db:migrate`, then build the host Admin. Do not also register the same module manually. No plugin activation or migration on Uniek is included in this batch.
+Run the application's `medusa db:migrate`, then build its Admin. Plugin discovery registers the module, migration, API routes and Admin extension; do not register the same module separately. The migration creates menu storage and leaves the native catalog unchanged.
+
+The package's dependency overrides apply only when this repository is the npm root. A consuming application must review its own lockfile, dependency compatibility and audit results.
 
 ## Admin management
 
-Open **Mega menus**. Create a menu with a unique handle (for example `main`). A menu starts unpublished. Add sections, select their native category or collection, choose and order individual featured products, and choose any display limit from 0–50 (top 3, top 5, etc.). Section order is array order. Section keys are unique stable identifiers for storefront components. A section's View all target is always its entire native group; a separate optional Shop all target is also a native category or collection.
+Open **Mega menus** and create a menu with a unique handle such as `main`. Menus start unpublished. Add sections, select an existing category or collection, choose individual featured products, then order both products and sections with the editor controls. Set **Publish menu** and save when the menu is ready for the Store API.
 
-The editor searches native catalog endpoints; it does not maintain its own product picker database. Product/category/collection read permissions are needed for those selectors in RBAC hosts. Search narrows large catalogs; the selectors show up to 100 groups or 50 products per search. Product IDs remain visible when not in the current search results. A menu may have at most 30 sections, each with at most 50 selected products. List management currently displays at most 100 menus.
+Each section has a stable key, a label, an enabled switch, a native group, ordered product IDs, a display limit and an optional tile. **View all** always refers to the full native category or collection, not just the featured selection. **Shop all** is a separate optional menu-level native group reference.
 
-Each section optionally has one image/logo/feature tile. Enable it, enter an existing Medusa upload/CDN URL and meaningful alt text, and optionally enter a link. Disabling the tile removes it. Upload assets through Medusa's existing file management; this plugin does not introduce file storage. API callers can retain the native `file_id` alongside its URL. Only HTTPS URLs or local absolute paths are accepted; the plugin never fetches image or link URLs. Configure the storefront's image host allowlist as needed.
+The selectors search the native Admin catalog APIs. They show up to 100 groups or 50 products per search; selected IDs remain visible when absent from the current results. Menu management lists up to 100 menus. A menu accepts at most 30 sections, with at most 50 selected products per section.
 
-Saving replaces the entire menu aggregate in one native module-service write. No multi-module commerce mutations or compensating saga are needed. Concurrent saves use last-write-wins; coordinate editors. Publishing is explicit via the menu switch. Delete soft-deletes the menu. A unique active handle prevents collisions.
+### Image tiles
 
-## Native catalog prerequisites
+Enable a section's tile and provide an existing image URL and meaningful alt text. An optional link can point to a storefront path or HTTPS destination. API callers can retain the native `file_id` alongside the URL. Disabling a tile removes it from the public response.
 
-Categories are hierarchical and a product can belong to multiple categories. Collections are curated single-collection groupings. This plugin does not reclassify products or infer membership from names. A selected product must belong **directly** to the selected category or collection when saving. Parent categories do not implicitly include descendants; merchants should choose the exact native group whose listing the storefront supports. Native hierarchy can remain as deep as the store needs; menu sections are a deliberate flat presentation of selected groups.
+The plugin accepts HTTPS URLs without credentials and local absolute paths. It rejects protocol-relative, executable, whitespace-containing and unsafe URLs, and never fetches those URLs itself. Manage uploads through the application's existing media storage and configure image-host allowlists in the storefront. A menu tile does not automatically inherit or follow later category/collection image edits.
 
-Example: create or choose an existing category named “Networking”, assign the intended products using native Medusa management, select that category in a section, manually choose three products and set the limit to 3. View all still points to the full Networking category. This is a generic setup example, not a seed script. Existing seed/development catalog data is untouched.
+## Catalog and access boundaries
 
-At every Store request, missing/deleted groups are omitted, inactive/internal categories are omitted, and product status, group membership and sales-channel links are rechecked. Removed or unpublished products disappear without backfilling; eligible selected products retain their order before the limit is applied. An empty section can still offer View all. Category visibility follows that exact native category's active/internal flags, consistent with native product filtering; no ancestor visibility policy is invented.
+- Featured products must belong directly to the selected category or collection when saving. A parent category does not implicitly include descendants.
+- Every Store request rechecks native group availability, product publication, direct membership and current sales-channel links. Missing groups and inactive/internal categories are omitted.
+- Eligible selected products retain their configured order before the display limit is applied. Removed or unpublished products disappear without automatic backfilling. A section with no eligible products can still provide View all.
+- Store requests use only the publishable key's native sales-channel context. Query parameters cannot expand that scope. A multi-channel key receives the eligible union; a key without channels is rejected.
+- Enabled menu configuration is public by handle within one backend. Distinct handles and correctly scoped publishable keys are required for separate storefronts; no domain-based tenant identity is inferred.
+- Saving replaces the complete validated menu aggregate. Concurrent edits use last-write-wins; coordinate editors. Requests reject unknown fields, duplicate section keys/product IDs and invalid native references.
+- Admin routes require a persisted native staff user. Optional RBAC enforcement runs on the server and does not accept authority flags from request data.
+- Admin and Store responses disable caching. A storefront that adds caching must choose its own invalidation policy.
 
 ## API
 
-Admin requests use native staff session or bearer authentication. Responses have `Cache-Control: no-store`.
+Admin requests use native staff session or bearer authentication. Store requests require a valid `x-publishable-api-key` associated with sales channels.
 
-| Method | Path | Result |
+| Method | Endpoint | Result |
 | --- | --- | --- |
-| GET | `/admin/mega-menus` | `{ mega_menus, count }` (first 100, handle order) |
-| POST | `/admin/mega-menus` | Create; `{ mega_menu }`, status 201 |
-| GET | `/admin/mega-menus/:id` | `{ mega_menu }` |
-| POST | `/admin/mega-menus/:id` | Full validated replacement; `{ mega_menu }` |
-| DELETE | `/admin/mega-menus/:id` | Soft delete acknowledgement |
-| GET | `/store/mega-menus/:handle` | Published resolved `{ mega_menu }`; otherwise 404 |
+| GET | `/admin/mega-menus` | `{ mega_menus, count }`, in handle order. |
+| POST | `/admin/mega-menus` | Create a menu; `{ mega_menu }`, status 201. |
+| GET | `/admin/mega-menus/:id` | `{ mega_menu }`. |
+| POST | `/admin/mega-menus/:id` | Replace the validated menu configuration; `{ mega_menu }`. |
+| DELETE | `/admin/mega-menus/:id` | Delete acknowledgement; the menu is no longer publicly available. |
+| GET | `/store/mega-menus/:handle` | Published, resolved `{ mega_menu }`; otherwise 404. |
 
-Create/update body:
+Create or update with the complete menu configuration:
 
 ```json
 {
   "handle": "main",
   "title": "Main navigation",
   "enabled": false,
-  "shop_all": { "type": "category", "id": "pcat_existing_parent" },
-  "sections": [{
-    "key": "networking",
-    "label": "Networking",
-    "enabled": true,
-    "target": { "type": "category", "id": "pcat_existing_group" },
-    "featured_product_ids": ["prod_existing_1", "prod_existing_2"],
-    "display_limit": 3,
-    "tile": null
-  }]
+  "shop_all": null,
+  "sections": [
+    {
+      "key": "networking",
+      "label": "Networking",
+      "enabled": true,
+      "target": { "type": "category", "id": "pcat_existing" },
+      "featured_product_ids": ["prod_existing"],
+      "display_limit": 3,
+      "tile": null
+    }
+  ]
 }
 ```
 
-Use real native IDs; the placeholders above intentionally fail catalog validation. `type: "collection"` accepts a native collection ID. Tile shape: `{ "enabled": true, "url": "https://cdn.example.com/logo.png", "alt": "Brand", "href": "/brands/example", "file_id": "file_existing" }`; `href` and `file_id` are optional. Unknown fields, duplicate IDs/keys, unsafe URLs and excessive limits are rejected.
+Replace the example IDs with existing native records whose membership is valid. A collection target uses `{ "type": "collection", "id": "pcol_existing" }`. Menu handles and section keys use lowercase letters, digits, underscores and hyphens, beginning with a letter or digit and containing at most 64 characters.
 
-Store requests require a valid native `x-publishable-api-key` linked to sales channels. The endpoint uses **only** `req.publishable_key_context.sales_channel_ids`; caller query parameters cannot expand scope. A key with no channels is rejected. For a key linked to multiple channels the eligible products are the union, matching its scope. Use a dedicated key per storefront when stores must be isolated. Menu configuration itself is public once enabled, shared by handle within one Medusa backend; there is no tenant identity inferred from a domain. Use distinct handles per storefront.
+An enabled tile has `{ "enabled": true, "url": "https://cdn.example.com/menu.png", "alt": "Networking", "href": "/categories/networking" }`. Its `href` and `file_id` fields are optional.
 
-The public contract contains only menu title/handle, public native target IDs/handles/labels, section keys/labels, optional enabled tiles and product cards `{ id, title, handle, thumbnail }`. It does not serialize full products, metadata, variants, costs, admin fields, unselected IDs or disabled tiles. Prices and availability should be obtained from the native Store Products API with the storefront's region/currency context; the plugin does not duplicate pricing or inventory logic. Responses disable caching so publication/channel changes take effect on subsequent requests; storefront caches must choose their own invalidation policy.
+## Storefront integration
+
+Fetch a menu using the storefront's configured backend URL and publishable key:
+
+```ts
+import type { StoreMenu } from "@abhi1693/medusa-megamenu"
+
+const response = await fetch(
+  `${backendUrl}/store/mega-menus/${encodeURIComponent(handle)}`,
+  {
+    headers: { "x-publishable-api-key": publishableKey },
+    cache: "no-store",
+  },
+)
+if (!response.ok) throw new Error("Menu is unavailable")
+const { mega_menu }: { mega_menu: StoreMenu } = await response.json()
+```
+
+The public contract includes the menu title/handle, native target IDs/handles/labels, section keys/labels, enabled tiles and product cards containing only `id`, `title`, `handle` and `thumbnail`. It does not return full product records, metadata, variants, costs or disabled selections. Use the native Store Products API with the application's region/currency context for prices and availability.
+
+Map each `view_all` and `shop_all` reference to your existing category or collection route using its handle. Map product handles to existing product detail routes. The plugin does not assume a URL pattern or turn a featured subset into the full listing.
+
+Build the menu shell and slot components in the storefront, including keyboard navigation, focus handling and open/close behavior. When `tile` is null, omit that slot. The exported `StoreMenu`, `StoreSection`, `NativeTarget` and `ProductCard` types support different layouts and frameworks without a bundled renderer or CSS.
 
 ## RBAC integration
 
-Without an RBAC module, Medusa's native model applies: any authenticated, existing staff user can manage navigation. When `rbac_access` is registered, the plugin additionally delegates authorization to its persisted principal and `allows` policy. It never accepts superuser status from a request. The RBAC service grants genuine **active native staff superusers** access to all actions; ordinary principals require the permissions below. The RBAC module's global Admin guard also requires custom route registration.
+Without an RBAC module, any authenticated, existing native staff user can manage menus. When `rbac_access` is registered, the guard additionally resolves the persisted principal and trusted permission context and delegates to its `allows` policy. The principal must be active, have actor type `user` and match the authenticated native staff ID.
 
-Merge these exports into the host's existing RBAC module options:
+Merge the exported declarations into the host's existing RBAC module configuration:
 
 ```ts
-import { megamenuPermissions, megamenuResources } from "@abhi1693/medusa-megamenu/rbac"
+import {
+  megamenuPermissions,
+  megamenuResources,
+} from "@abhi1693/medusa-megamenu/rbac"
 
-// Within existing @abhi1693/medusa-rbac module options:
 permissions: [...existingPermissions, ...megamenuPermissions],
 resources: [...existingResources, ...megamenuResources],
 ```
 
-`megamenu.view` (“View mega menus”, Navigation) guards reads; `megamenu.manage` (“Manage mega menus”, Navigation) guards writes/deletes. Give editors both, plus native `products.view`, `categories.view`, `collections.view` for selectors. Native uploads need the host's media permission. Registration, displayed catalog and enforced identifiers use the same exports. No roles or assignments are auto-created. The Admin navigation entry can be visible to staff without access; its API calls are still denied. No plugin-specific hiding rule excludes superusers.
+`megamenu.view` guards reads; `megamenu.manage` guards writes and deletion. Ordinary editors need both, plus the host's native product, category and collection read permissions for catalog selectors. Native uploads use the host's media permissions. Superuser authority is decided by the RBAC service, not by a request field or an extra role definition in this plugin.
 
-## Storefront integration and styling
+The declarations also register the custom Admin routes for the RBAC global guard. Match and validate the plugins' peer versions before combining them in a host; a full joint browser/HTTP installation is not claimed by the standalone plugin checks.
 
-```ts
-const { mega_menu } = await fetch(`${backend}/store/mega-menus/main`, {
-  headers: { "x-publishable-api-key": publishableKey },
-  cache: "no-store",
-}).then(async response => {
-  if (!response.ok) throw new Error(`Menu request failed: ${response.status}`)
-  return response.json()
-})
+## Development
+
+```sh
+npm ci
+npm run typecheck
+npm test
+npm run build
+npm run test:integration
+npm pack --ignore-scripts --dry-run
 ```
 
-Map each `view_all`/`shop_all` reference to the storefront's **existing** category or collection listing route using its handle. Map product handles to existing product detail routes. Do not link View all to the small featured-product array. URL patterns are intentionally not assumed; native IDs and handles let every store choose its own routes.
+The integration command builds and packs the plugin, then creates its own disposable PostgreSQL container and native Medusa host. It checks repeated migrations, schema-snapshot compatibility, native group membership, publication/channel filtering and real authenticated HTTP APIs, then removes its own test resources. Docker is required; it does not read a merchant database URL.
 
-Render your own accessible menu shell (focus handling, keyboard navigation, open/close behavior) and slot components for section headings, product cards, View all, Shop all and optional tiles. When `tile` is null, omit that slot and let your grid use the freed space. Different stores may use entirely different layouts, typography and interaction. Exported TypeScript contracts (`StoreMenu`, `StoreSection`, `NativeTarget`, `ProductCard`) support those adapters. There is no bundled renderer, CSS, Uniek-specific inventory or search service. The approved Uniek Demo4 informed the optional tile and grouped navigation concepts only. Uniek section implementation and live integration require separate scope confirmation.
+CI also runs the shared packager against the actual archive. Additional migration-snapshot and route requirements are declared in `package.json` under `config.release.requiredFiles`; generic packaging implementation stays in the actions repository. The local build retains snapshot copying because Medusa's compiler does not include that hidden native JSON file automatically.
 
-### Optional collection-images interoperability
+Release preparation and npm publication are documented in [Preparing and publishing Mega Menu](docs/releasing.md). No release is created by normal CI. [VERIFICATION.md](VERIFICATION.md) records the initial implementation's checks and limits; it does not imply current storefront visual QA, a combined RBAC host test or publication from this migration.
 
-The user-provided [Collection images integration](https://medusajs.com/integrations/@alphabitemedusa-collection-images) was reviewed separately. Its listed/latest package is `@alphabite/medusa-collection-images@0.3.7`. The listing says Medusa 2.14+; its published peer ranges include Medusa/framework/Admin SDK `^2.13.6` and UI `^4.0.3`, so they admit the inspected 2.22.1/4.2.8 versions. That establishes declared compatibility, not tested runtime compatibility. The linked [GitHub source](https://github.com/alphabite-dev/medusa-collection-images) returned repository-not-found during review; the published npm tarball was inspected read-only, without installation or activation.
+## License
 
-Its actual model is a separate `product_collection_image` module with `id`, `url`, `rank`, `product_collection_id`, and nullable `metadata`, linked as a list to native product collections. It offers `GET /admin/product-collection/:id` and POST/PUT/DELETE `/admin/product-collection/:id/images`; the Admin widget uses native collection `metadata.thumbnail` for the selected thumbnail. The inspected package contains no Store route. It does not make images a built-in collection field or add native file IDs to its image model. Its DELETE handler also contains a `product_category_images` / `product_category_id` readback, which should be tested before adopting it for collection-image management.
-
-Recommendation: keep this integration optional. An existing uploaded URL from that integration can already be used as a menu tile URL, reusing the asset without a second upload or image store. A merchant must still choose menu-specific alt text/link and enable the tile. This is an explicit reference to the same asset URL; it does not automatically follow later collection-image edits. A collection's reusable thumbnail is catalog presentation, while a menu's optional promotional/logo tile may be entirely different. If dynamic collection-thumbnail inheritance is later requested, add a small host adapter that reads the explicitly selected native collection and returns only a safe URL/alt pair; do not serialize its full metadata or expose its Admin endpoint publicly. Do not add a hard dependency, new image database, or unconditional inheritance. No third-party package has been added to this plugin or Uniek.
-
-## Verification
-
-`npm run typecheck`, `npm test`, `npm run build`, and `npm run test:package` validate the source and distributable. `npm run test:integration` builds/packs the plugin and verifies its migrations, native catalog queries and real HTTP APIs in a disposable PostgreSQL/Medusa host (Docker required). Unit tests exercise unsafe input, public response allowlists, product order/limits, native membership failures, publication/channel filtering, missing/disabled menus and trusted staff/RBAC decisions. Exact results and limitations are recorded in `VERIFICATION.md`. No runtime verification in Uniek or storefront visual verification is implied.
-
-Official references: [Medusa plugins](https://docs.medusajs.com/learn/fundamentals/plugins), [custom modules](https://docs.medusajs.com/learn/fundamentals/modules), [publishable-key channel context](https://docs.medusajs.com/resources/commerce-modules/sales-channel/publishable-api-keys), [middleware](https://docs.medusajs.com/learn/fundamentals/api-routes/middlewares). Exact API behavior was also checked against installed Medusa 2.22.1 source.
+[MIT](LICENSE)
