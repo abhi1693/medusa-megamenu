@@ -12,7 +12,7 @@ Headless navigation for Medusa v2, with native Admin editing for menus, category
 
 Validated with Medusa **2.22.1**, UI **4.2.8**, React **18.3.1** and Node.js **24**. The package requires Node.js **22.22.0 or newer** and currently declares exact **2.22.1** peers for the Medusa framework, commerce package, Admin SDK and icons. Align the host's installed versions with those peers; support for later versions is not implied.
 
-[Install](#install) · [Capabilities](#capabilities) · [Admin management](#admin-management) · [Storefront integration](#storefront-integration) · [RBAC integration](#rbac-integration) · [Server guarantees](#catalog-and-access-boundaries)
+[Install](#install) · [Capabilities](#capabilities) · [Admin management](#admin-management) · [Storefront integration](#storefront-integration) · [Server guarantees](#catalog-and-access-boundaries)
 
 ## Capabilities
 
@@ -139,26 +139,6 @@ Map each `view_all` and `shop_all` reference to your existing category or collec
 
 Build the menu shell and slot components in the storefront, including keyboard navigation, focus handling and open/close behavior. When `tile` is null, omit that slot. The exported `StoreMenu`, `StoreSection`, `NativeTarget` and `ProductCard` types support different layouts and frameworks without a bundled renderer or CSS.
 
-## RBAC integration
-
-Without an RBAC module, any authenticated, existing native staff user can manage menus. When `rbac_access` is registered, the guard additionally resolves the persisted principal and trusted permission context and delegates to its `allows` policy. The principal must be active, have actor type `user` and match the authenticated native staff ID.
-
-Merge the exported declarations into the host's existing RBAC module configuration:
-
-```ts
-import {
-  megamenuPermissions,
-  megamenuResources,
-} from "@abhi1693/medusa-megamenu/rbac"
-
-permissions: [...existingPermissions, ...megamenuPermissions],
-resources: [...existingResources, ...megamenuResources],
-```
-
-`megamenu.view` guards reads; `megamenu.manage` guards writes and deletion. Ordinary editors need both, plus the host's native product, category and collection read permissions for catalog selectors. Native uploads use the host's media permissions. Superuser authority is decided by the RBAC service, not by a request field or an extra role definition in this plugin.
-
-The declarations also register the custom Admin routes for the RBAC global guard. Match and validate the plugins' peer versions before combining them in a host; a full joint browser/HTTP installation is not claimed by the standalone plugin checks.
-
 ## Development
 
 ```sh
@@ -174,7 +154,6 @@ The integration command builds and packs the plugin, then creates its own dispos
 
 CI also runs the shared packager against the actual archive. Additional migration-snapshot and route requirements are declared in `package.json` under `config.release.requiredFiles`; generic packaging implementation stays in the actions repository. The local build retains snapshot copying because Medusa's compiler does not include that hidden native JSON file automatically.
 
-Release preparation and npm publication are documented in [Preparing and publishing Mega Menu](docs/releasing.md). No release is created by normal CI. [VERIFICATION.md](VERIFICATION.md) records the initial implementation's checks and limits; it does not imply current storefront visual QA, a combined RBAC host test or publication from this migration.
 
 ## License
 

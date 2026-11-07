@@ -14,8 +14,7 @@
     ".medusa/server",
     "README.md",
     "LICENSE",
-    "scripts/copy-snapshots.mjs",
-    "VERIFICATION.md"
+    "scripts/copy-snapshots.mjs"
   ],
   "exports": {
     ".": {
