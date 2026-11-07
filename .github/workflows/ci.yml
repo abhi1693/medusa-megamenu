@@ -21,7 +21,7 @@ jobs:
       - run: npm run test:integration
       - name: Load shared package verifier
         id: release-tools
-        uses: abhi1693/actions/.github/actions/npm-release@6c9bbfa21084e95f1c2837e35d553179c8f47b4c
+        uses: abhi1693/actions/.github/actions/npm-release@v1
       - name: Verify actual distributable
         env:
           TOOLS: ${{ steps.release-tools.outputs.path }}
