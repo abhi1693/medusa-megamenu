@@ -13,6 +13,8 @@ import {
 import { createServer } from "node:net";
 import path from "node:path";
 const root = process.cwd();
+const pkg = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+const archive = `${pkg.name.replace(/^@/, "").replace("/", "-")}-${pkg.version}.tgz`;
 const host = path.join(root, ".test-host");
 const token = randomBytes(6).toString("hex");
 const name = `megamenu-test-${token}`;
@@ -43,7 +45,7 @@ try {
   await mkdir(path.join(host, "src/scripts"), { recursive: true });
   exec("tar", [
     "-xzf",
-    path.join(root, "abhi1693-medusa-megamenu-0.0.1.tgz"),
+    path.join(root, archive),
     "--strip-components=1",
     "-C",
     path.join(host, "node_modules/@abhi1693/medusa-megamenu"),
