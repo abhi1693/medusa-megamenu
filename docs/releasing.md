@@ -1,6 +1,6 @@
 # Preparing and publishing Mega Menu
 
-The thin release callers use the [central npm workflows](https://github.com/abhi1693/actions/blob/062b31c1f58654d1793dce62907a2f41ea792ba3/docs/npm-release.md). Common packaging, checksums, provenance, draft assets, OIDC publication and exact registry-byte verification stay in actions.
+The thin release callers use the [central npm workflows](https://github.com/abhi1693/actions/blob/6c9bbfa21084e95f1c2837e35d553179c8f47b4c/docs/npm-release.md). Common packaging, checksums, provenance, draft assets, OIDC publication and exact registry-byte verification stay in actions.
 
 1. Review the package/lockfile version and matching docs/releases/VERSION.md notes. Normal CI includes unit tests, a packed native HTTP/migration integration and the shared archive verifier.
 2. After review and authorization, run **Prepare release** with that exact version. It creates a draft and verifies uploaded assets; it does not publish to npm.
