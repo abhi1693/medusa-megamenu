@@ -1,6 +1,6 @@
 {
   "name": "@abhi1693/medusa-megamenu",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Headless mega menus for Medusa v2 with native Admin editing, catalog groups, ordered products and sales-channel-aware Store APIs",
   "license": "MIT",
   "repository": {
@@ -85,7 +85,8 @@
     "storefront",
     "medusa-admin",
     "ecommerce",
-    "typescript"
+    "typescript",
+    "medusa-plugin-other"
   ],
   "homepage": "https://github.com/abhi1693/medusa-megamenu#readme",
   "bugs": {
