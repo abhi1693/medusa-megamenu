@@ -62,7 +62,7 @@ try {
       name: "megamenu-disposable-test",
       version: "0.0.0",
       private: true,
-      dependencies: { "@medusajs/medusa": "2.22.1" },
+      dependencies: { "@medusajs/medusa": pkg.devDependencies["@medusajs/medusa"] },
     }),
   );
   await copyFile(
