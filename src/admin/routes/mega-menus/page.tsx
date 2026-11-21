@@ -61,7 +61,7 @@ function GroupPicker({
         onChange={(e) =>
           onChange({ type: e.target.value as Target["type"], id: "" })
         }
-        className="rounded border p-2"
+        className="rounded-sm border p-2"
       >
         <option value="category">Category</option>
         <option value="collection">Collection</option>
@@ -78,7 +78,7 @@ function GroupPicker({
         onChange={(e) =>
           onChange(e.target.value ? { type, id: e.target.value } : null)
         }
-        className="rounded border p-2"
+        className="rounded-sm border p-2"
       >
         <option value="">Select native group</option>
         {value?.id && !groups.some((g) => g.id === value.id) && (
@@ -141,7 +141,7 @@ function Featured({
       <select
         aria-label="Add featured product"
         value=""
-        className="rounded border p-2"
+        className="rounded-sm border p-2"
         onChange={(e) => {
           if (e.target.value)
             change({
@@ -287,7 +287,7 @@ export default function MegaMenus() {
         aria-label="Select menu"
         value={id}
         onChange={(e) => select(e.target.value)}
-        className="rounded border p-2"
+        className="rounded-sm border p-2"
       >
         <option value="">New menu</option>
         {menus.map((m) => (
@@ -334,7 +334,7 @@ export default function MegaMenus() {
         </Button>
       </div>
       {menu.sections.map((s, i) => (
-        <div key={i} className="flex flex-col gap-4 rounded border p-4">
+        <div key={i} className="flex flex-col gap-4 rounded-sm border p-4">
           <div className="flex gap-2">
             <Heading level="h2">Section {i + 1}</Heading>
             <Button

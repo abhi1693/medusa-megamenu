@@ -1,7 +1,7 @@
 # Medusa Mega Menu
 
 [![CI](https://github.com/abhi1693/medusa-megamenu/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/abhi1693/medusa-megamenu/actions/workflows/ci.yml)
-[![Medusa 2.22.1](https://img.shields.io/badge/Medusa-2.22.1-7c3aed)](https://docs.medusajs.com/)
+[![Medusa 2.23.0](https://img.shields.io/badge/Medusa-2.23.0-7c3aed)](https://docs.medusajs.com/)
 [![Node.js >=22.22.0](https://img.shields.io/badge/Node.js-%E2%89%A522.22.0-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![MIT license](https://img.shields.io/github/license/abhi1693/medusa-megamenu)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-abhi1693-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/abhi1693)
@@ -10,7 +10,7 @@ Headless navigation for Medusa v2, with native Admin editing for menus, category
 
 **Your native catalog remains authoritative.** The plugin stores menu configuration and references existing products, categories and collections. Your storefront owns its routes, rendering and interaction; the plugin does not create catalog records or bundle a menu renderer.
 
-Validated with Medusa **2.22.1**, UI **4.2.8**, React **18.3.1** and Node.js **24**. The package requires Node.js **22.22.0 or newer** and currently declares exact **2.22.1** peers for the Medusa framework, commerce package, Admin SDK and icons. Align the host's installed versions with those peers; support for later versions is not implied.
+Validated with Medusa **2.23.0**, UI **4.3.0**, React **19.3.1** and Node.js **24**. The package requires Node.js **22.22.0 or newer** and currently declares exact **2.23.0** peers for the Medusa framework, commerce package, Admin SDK and icons. Align the host's installed versions with those peers; support for later versions is not implied.
 
 [Install](#install) · [Capabilities](#capabilities) · [Admin management](#admin-management) · [Storefront integration](#storefront-integration) · [Server guarantees](#catalog-and-access-boundaries)
 
